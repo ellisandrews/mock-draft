@@ -73,8 +73,8 @@ const handlePlayerPoolTableClick = event => {
             const tr = makePlayerTableRow(playersCache[playerId], 'Remove')
             document.querySelector("#player-queue-tbody").appendChild(tr)
 
-            // Get rid of the Queue button for that player
-            playerPoolRow.querySelector('button').remove()
+            // Hide the Queue button for that player
+            playerPoolRow.querySelector('button').style.display = "none"
 
         } else if (target.innerText === 'Draft') {
             // Add the player to a roster
@@ -83,11 +83,37 @@ const handlePlayerPoolTableClick = event => {
     }
 }
 
+const handlePlayerQueueTableClick = event => {
+    // Get the target element of the click event
+    target = event.target
+
+    // Only listen for clicks on a <button>
+    if (target.matches('button')) {
+
+        // Get the player row clicked on (which has the data-player-id)
+        const playerQueueRow = target.parentElement.parentElement 
+        const playerId = playerQueueRow.dataset.playerId
+
+        if (target.innerText === 'Remove') {
+            // Remove the player row from Queue table
+            playerQueueRow.remove()
+
+            // Unhide the Queue button in the Pool table
+            const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+            playerPoolRow.querySelector('button').style.display = "block"
+
+        } else if (target.innerText === 'Draft') {
+            // Add the player to a roster
+            console.log('*** TODO! Drafting ***')
+        }
+    }
+}
 
 // Entry point for execution
 const main = () => {
     fetchAndPopulatePlayerPool()
     playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
+    playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
 }
 
 // Execution
