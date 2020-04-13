@@ -19,7 +19,7 @@ const makePlayerTableRow = (rankedPlayer, buttonText='Queue') => {
                    <td>${rankedPlayer.positionRank}</td>
                    <td>${rankedPlayer.team}</td>
                    <td>${rankedPlayer.byeWeek}</td>
-                   <td><button>${buttonText}</button></td>
+                   <td><button>${buttonText}</button><button>Draft</button></td>
                    `
     return tr
 }
@@ -100,7 +100,7 @@ const handlePlayerQueueTableClick = event => {
 
             // Unhide the Queue button in the Pool table
             const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
-            playerPoolRow.querySelector('button').style.display = "block"
+            playerPoolRow.querySelector('button').removeAttribute("style")
 
         } else if (target.innerText === 'Draft') {
             // Add the player to a roster
@@ -108,6 +108,12 @@ const handlePlayerQueueTableClick = event => {
         }
     }
 }
+
+// Handle a player being drafted to the user's roster
+const draftPlayer = () => {
+    
+}
+
 
 // Entry point for execution
 const main = () => {
