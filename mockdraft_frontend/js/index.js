@@ -1,8 +1,10 @@
+// Commonly used permanent nodes
+const playerPoolTable = document.querySelector("#player-pool-table")
+const playerQueueTable = document.querySelector("#player-queue-table")
 
 // Helper functions
 const parseJSONResponse = response => response.json()
 const logError = error => console.log(error)
-
 
 const makePlayerTableRow = (rankedPlayer, buttonText='Queue') => {
     // Make a <tr> element
@@ -63,28 +65,29 @@ const handlePlayerPoolTableClick = event => {
     if (target.matches('button')) {
 
         // Get the player row clicked on (which has the data-player-id)
-        const playerId = target.parentElement.parentElement.dataset.playerId
+        const playerPoolRow = target.parentElement.parentElement 
+        const playerId = playerPoolRow.dataset.playerId
 
         if (target.innerText === 'Queue') {
             // Add make a new player row and append it to the Queue table
             const tr = makePlayerTableRow(playersCache[playerId], 'Remove')
             document.querySelector("#player-queue-tbody").appendChild(tr)
+
+            // Get rid of the Queue button for that player
+            playerPoolRow.querySelector('button').remove()
+
         } else if (target.innerText === 'Draft') {
+            // Add the player to a roster
             console.log('*** TODO! Drafting ***')
         }
     }
 }
 
-// Listen for clicks on the player pool table
-const addPlayerPoolButtonListener = () => {
-    const poolTable = document.querySelector("#player-pool-table")
-    poolTable.addEventListener('click', handlePlayerPoolTableClick)
-}
 
 // Entry point for execution
 const main = () => {
     fetchAndPopulatePlayerPool()
-    addPlayerPoolButtonListener()
+    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
 }
 
 // Execution
