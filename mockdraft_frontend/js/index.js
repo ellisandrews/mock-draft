@@ -1,5 +1,9 @@
 // Backend JSON API URL base
 const APIBASE = 'http://localhost:3000'
+const rosterPositions = new Set([
+    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'D/ST', 'K',
+    'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
+])
 
 // Commonly used permanent nodes
 const playerPoolTable = document.querySelector("#player-pool-table")
@@ -112,115 +116,27 @@ const handlePlayerQueueTableClick = event => {
     }
 }
 
-// Handle a player being drafted to the user's roster
-const rosterPlayer = (playerId, rosterId) => {
-    // Make an API call to the backend adding the player to the roster
+const findOpenRosterPositions = roster => {
+    // Return an array of the not-yet-filled positions on the roster
+    const takenPositions = new Set()
 
-    // Remove the player from the pool and all queues
+    roster.players.forEach(player => {
+        takenPositions.add(player.roster_position)
+    })
 
-    // Update the displayed roster?
-
+    return [...rosterPositions].filter(position => !takenPositions.has(position));
 }
 
 const displayRoster = roster => {
-    const players = roster.players  // For convenience
-    const rosterTable = `
-                        <table id="roster-table">
-                          <caption>Roster: ${roster.name}</caption>
-                          <thead>
-                            <tr>
-                              <th>Position</th>
-                              <th>Player</th>
-                              <th>Bye Week</th>
-                            </tr>
-                          </thead>
-                          <tbody id="roster-tbody">
-                            <tr title="QB">
-                              <td>QB</td>
-                              <td>${players.qb.displayName || ''}</td>
-                              <td>${players.qb.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="RB1">
-                              <td>RB</td>
-                              <td>${players.rb1.displayName || ''}</td>
-                              <td>${players.rb1.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="RB2">
-                              <td>RB</td>
-                              <td>${players.rb2.displayName || ''}</td>
-                              <td>${players.rb2.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="WR1">
-                              <td>WR</td>
-                              <td>${players.wr1.displayName || ''}</td>
-                              <td>${players.wr1.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="WR2">
-                              <td>WR</td>
-                              <td>${players.wr2.displayName || ''}</td>
-                              <td>${players.wr2.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="TE">
-                              <td>TE</td>
-                              <td>${players.te.displayName || ''}</td>
-                              <td>${players.te.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="FLEX">
-                              <td>FLEX</td>
-                              <td>${players.flex.displayName || ''}</td>
-                              <td>${players.flex.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="D/ST">
-                              <td>D/ST</td>
-                              <td>${players.dst.displayName || ''}</td>
-                              <td>${players.dst.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="K">
-                              <td>K</td>
-                              <td>${players.k.displayName || ''}</td>
-                              <td>${players.k.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH1">
-                              <td>BENCH</td>
-                              <td>${players.bench1.displayName || ''}</td>
-                              <td>${players.bench1.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH2">
-                              <td>BENCH</td>
-                              <td>${players.bench2.displayName || ''}</td>
-                              <td>${players.bench2.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH3">
-                              <td>BENCH</td>
-                              <td>${players.bench3.displayName || ''}</td>
-                              <td>${players.bench3.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH4">
-                              <td>BENCH</td>
-                              <td>${players.bench4.displayName || ''}</td>
-                              <td>${players.bench4.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH5">
-                              <td>BENCH</td>
-                              <td>${players.bench5.displayName || ''}</td>
-                              <td>${players.bench5.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH6">
-                              <td>BENCH</td>
-                              <td>${players.bench6.displayName || ''}</td>
-                              <td>${players.bench6.byeWeek || ''}</td>
-                            </tr>
-                            <tr title="BENCH7">
-                              <td>BENCH</td>
-                              <td>${players.bench7.displayName || ''}</td>
-                              <td>${players.bench7.byeWeek || ''}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        `
-    // Set the innerHTML of the roster-show div to be the table
-    const rosterDiv = document.querySelector("#roster-show")
-    rosterDiv.innerHTML = rosterTable
+
+    roster.players.forEach(player => {
+        // Find the roster table row that corresponds to the player's roster_position
+        const tr = document.querySelector(`#${player.roster_position}`)
+        const tds = tr.querySelectorAll('td')
+        tds[1].innerText = `${player.first_name} ${player.last_name}`
+        tds[2].innerText = player.bye_week
+    })
+
 }
 
 const fetchAndDisplayRoster = rosterId => {
@@ -235,7 +151,7 @@ const main = () => {
     fetchAndPopulatePlayerPool()
     playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
-    fetchAndDisplayRoster(1)
+    fetchAndDisplayRoster(1)  // Currently hard coded!!
 }
 
 // Execution
