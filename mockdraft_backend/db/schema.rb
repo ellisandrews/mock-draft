@@ -35,6 +35,7 @@ ActiveRecord::Schema.define(version: 5) do
     t.integer "overall_rank"
     t.integer "bye_week"
     t.integer "roster_id"
+    t.integer "owner_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
