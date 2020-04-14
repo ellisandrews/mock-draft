@@ -55,8 +55,9 @@ const fetchAndPopulatePlayerPool = () => {
     // Fetch player rankings from the backend, and display them in the player pool table
     fetch(`${APIBASE}/players`)
         .then(parseJSONResponse)
-        .then(players => players.slice(0, 10))  // TODO: Remove this limiting!!
+        .then(players => players.slice(0, 20))  // TODO: Remove this limiting!!
         .then(cachePlayers)
+        .then(players => players.filter(player => !player.roster_id))  // Filter out already rostered players
         .then(populatePlayerPoolTable)
         .catch(logError)
 }
