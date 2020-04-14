@@ -83,7 +83,7 @@ const handlePlayerPoolTableClick = event => {
 
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
-            console.log('*** TODO! Drafting ***')
+            draftPlayer(playerId, 1)  // ROSTER ID HARDCODED!!
         }
     }
 }
@@ -109,7 +109,7 @@ const handlePlayerQueueTableClick = event => {
 
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
-            console.log('*** TODO! Drafting ***')
+            draftPlayer(playerId, 1)  // ROSTER ID HARDCODED!!
         }
     }
 }
