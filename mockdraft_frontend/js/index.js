@@ -84,6 +84,15 @@ const handlePlayerPoolTableClick = event => {
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
             draftPlayer(playerId, 1)  // ROSTER ID HARDCODED!!
+            
+            // Remove the player from the pool
+            playerPoolRow.remove()
+
+            // Remove the player from the queue if necessary
+            const playerQueueRow = document.querySelector("#player-queue-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+            if (playerQueueRow) {
+                playerQueueRow.remove()
+            }
         }
     }
 }
@@ -110,6 +119,15 @@ const handlePlayerQueueTableClick = event => {
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
             draftPlayer(playerId, 1)  // ROSTER ID HARDCODED!!
+
+            // Remove the player from the queue table
+            playerQueueRow.remove()
+
+            // Remove the player from the pool
+            const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+            if (playerPoolRow) {
+                playerPoolRow.remove()
+            }
         }
     }
 }
@@ -237,7 +255,6 @@ const displayRoster = roster => {
         tds[2].innerText = player.bye_week
     })
 }
-
 
 const fetchRoster = rosterId => {
     return fetch(`${APIBASE}/rosters/${rosterId}`).then(parseJSONResponse)
