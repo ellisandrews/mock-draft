@@ -1,0 +1,70 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Mock Draft</title>
+  <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+
+  <header>
+    <h1>Mock Draft</h1>
+  </header>
+
+  <!-- Info Bar Content Here (round, next up owner, owner on the clock, clock) -->
+  <div>
+  </div>
+
+  <!-- Undrafted Player Pool Content Here -->
+  <div>
+    <table id="player-pool-table">
+      <caption>Draft Pool</caption>
+      <thead>
+        <tr>
+          <th>Overall Rank</th>
+          <th>Player</th>
+          <th>Position</th>
+          <th>Position Rank</th>
+          <th>Team</th>
+          <th>Bye Week</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="player-pool-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Queue Content Here -->
+  <div>
+    <table id="player-queue-table">
+      <caption>Your Queue</caption>
+      <thead>
+        <tr>
+          <th>Overall Rank</th>
+          <th>Player</th>
+          <th>Position</th>
+          <th>Position Rank</th>
+          <th>Team</th>
+          <th>Bye Week</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="player-queue-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Roster Content Here -->
+  <div id="roster-show">
+  </div>
+
+  <script src="./js/index.js" defer></script>
+</body>
+
+</html>
