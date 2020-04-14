@@ -1,9 +1,9 @@
 // Backend JSON API URL base
 const APIBASE = 'http://localhost:3000'
-const rosterPositions = new Set([
-    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DST', 'K',
-    'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
-])
+const rosterPositions = [
+    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DST', 'K', 'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
+]
+const playersCache = {}
 
 // Commonly used permanent nodes
 const playerPoolTable = document.querySelector("#player-pool-table")
@@ -13,49 +13,47 @@ const playerQueueTable = document.querySelector("#player-queue-table")
 const parseJSONResponse = response => response.json()
 const logError = error => console.log(error)
 
-const makePlayerTableRow = (rankedPlayer, buttonText='Queue') => {
+const makePlayerTableRow = (player, buttonText='Queue') => {
     // Make a <tr> element
     const tr = document.createElement('tr')
-    tr.dataset.playerId = rankedPlayer.playerId
+    tr.dataset.playerId = player.id
 
     // Make <td> elements for each field
     tr.innerHTML = `
-                   <td>${rankedPlayer.overallRank}</td>
-                   <td>${rankedPlayer.displayName}</td>
-                   <td>${rankedPlayer.position}</td>
-                   <td>${rankedPlayer.positionRank}</td>
-                   <td>${rankedPlayer.team}</td>
-                   <td>${rankedPlayer.byeWeek}</td>
+                   <td>${player.overall_rank}</td>
+                   <td>${player.displayName}</td>
+                   <td>${player.position}</td>
+                   <td>${player.position_rank}</td>
+                   <td>${player.team}</td>
+                   <td>${player.bye_week}</td>
                    <td><button>${buttonText}</button><button>Draft</button></td>
                    `
     return tr
 }
 
-const populatePlayerPoolTable = rankedPlayers => {
+const populatePlayerPoolTable = players => {
     // TODO: Limit the number of players displayed
     const tBody = document.querySelector("#player-pool-tbody")
 
-    rankedPlayers.forEach(rankedPlayer => {
-        const tr = makePlayerTableRow(rankedPlayer)
+    players.forEach(player => {
+        const tr = makePlayerTableRow(player)
         tBody.appendChild(tr)
     })
 }
 
-const cachePlayers = rankedPlayers => {
-    // Create a global variable of all the players
-    playersCache = {}
-    
-    rankedPlayers.forEach(rankedPlayer => {
-        playersCache[rankedPlayer.playerId] = rankedPlayer
+const cachePlayers = players => {
+    // Ad the players to the global cache
+    players.forEach(player => {
+        playersCache[player.id] = player
     })
 
     // Return the original data structure for further processing
-    return rankedPlayers
+    return players
 }
 
 const fetchAndPopulatePlayerPool = () => {
     // Fetch player rankings from the backend, and display them in the player pool table
-    fetch(`${APIBASE}/DraftRankings`)
+    fetch(`${APIBASE}/players`)
         .then(parseJSONResponse)
         .then(players => players.slice(0, 10))  // TODO: Remove this limiting!!
         .then(cachePlayers)
@@ -118,49 +116,76 @@ const handlePlayerQueueTableClick = event => {
 
 const findOpenRosterPositions = roster => {
     // Return an array of the not-yet-filled positions on the roster
-    const takenPositions = new Set()
+    const takenPositions = []
 
     roster.players.forEach(player => {
-        takenPositions.add(player.roster_position)
+        takenPositions.push(player.roster_position)
     })
 
-    return [...rosterPositions].filter(position => !takenPositions.has(position));
+    return rosterPositions.filter(position => !takenPositions.includes(position));
 }
 
-const determineRosterPosition = (position, rosterId) => {
+const determineRosterPosition = async (position, rosterId) => {
     // Figure out which roster position to put the player in given their position
 
     // Fetch the roster from the backend
+    const roster = await fetchRoster(rosterId)
 
-    // find the open positions
+    // Find the open positions on the roster (an array)
+    const openPositions = findOpenRosterPositions(roster)
+    const firstBench = openPositions.find(position => position.startsWith('BENCH'))
 
-    // select one of the open positions based on some logic based on the position
+    console.log(firstBench)
+
+    // // Select one of the open positions based on some logic based on the position
+    // let bench = false
+    // switch (position) {
+    //     case 'QB':
+    //         if (openPositions.includes(position)) {
+    //             return position
+    //         }
+    //     case 'RB':
+
+    //     case 'WR':
+
+    //     case 'TE':
+
+    //     case 'DST':
+
+    //     case 'K':
+
+    // }
 
 }
 
 
-const draftPlayer = (playerId, rosterId) => {
+const draftPlayer = async (playerId, rosterId) => {
     
+    // Fetch the player object
+    const player = await fetchPlayer(playerId)
+
+    // Determine the roster position for the player to fill
     const rosterPosition = determineRosterPosition(player.position, rosterId)
 
-    reqObj = {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            roster_id: rosterId,
-            roster_position: rosterPosition
-        })
-    }
+    // // Make a request to add the player to the roster in a certain position
+    // reqObj = {
+    //     method: 'PATCH',
+    //     headers: {
+    //         'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify({
+    //         roster_id: rosterId,
+    //         roster_position: rosterPosition
+    //     })
+    // }
 
-    // Update the backend, then conditionally update the frontend
-    fetch(`${APIBASE}/players/${playerId}`, reqObj)
-        .then(parseJSONResponse)
-        .then(player => {
-            console.log(player)
-        })
-        .catch(logError)
+    // // Update the backend, then conditionally update the frontend
+    // fetch(`${APIBASE}/players/${playerId}`, reqObj)
+    //     .then(parseJSONResponse)
+    //     .then(player => {
+    //         console.log(player)
+    //     })
+    //     .catch(logError)
 }
 
 
@@ -189,9 +214,17 @@ const displayRoster = roster => {
     })
 }
 
+
+const fetchRoster = rosterId => {
+    return fetch(`${APIBASE}/rosters/${rosterId}`).then(parseJSONResponse)
+}
+
+const fetchPlayer = playerId => {
+    return fetch(`${APIBASE}/players/${playerId}`).then(parseJSONResponse)
+}
+
 const fetchAndDisplayRoster = rosterId => {
-    fetch(`${APIBASE}/rosters/${rosterId}`)
-        .then(parseJSONResponse)
+        fetchRoster(rosterId)    
         .then(displayRoster)
         .catch(logError)
 }
