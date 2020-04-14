@@ -1,7 +1,7 @@
 // Backend JSON API URL base
 const APIBASE = 'http://localhost:3000'
 const rosterPositions = new Set([
-    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'D/ST', 'K',
+    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DST', 'K',
     'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
 ])
 
@@ -127,8 +127,59 @@ const findOpenRosterPositions = roster => {
     return [...rosterPositions].filter(position => !takenPositions.has(position));
 }
 
+const determineRosterPosition = (position, rosterId) => {
+    // Figure out which roster position to put the player in given their position
+
+    // Fetch the roster from the backend
+
+    // find the open positions
+
+    // select one of the open positions based on some logic based on the position
+
+}
+
+
+const draftPlayer = (playerId, rosterId) => {
+    
+    const rosterPosition = determineRosterPosition(player.position, rosterId)
+
+    reqObj = {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            roster_id: rosterId,
+            roster_position: rosterPosition
+        })
+    }
+
+    // Update the backend, then conditionally update the frontend
+    fetch(`${APIBASE}/players/${playerId}`, reqObj)
+        .then(parseJSONResponse)
+        .then(player => {
+            console.log(player)
+        })
+        .catch(logError)
+}
+
+
 const displayRoster = roster => {
 
+    const rosterCaption = document.querySelector('#roster-caption')
+
+    // Clear any existing data in the table
+    rosterCaption.innerText = ''
+    rosterPositions.forEach(position => {
+        // Find the roster table row that corresponds to the position
+        const tr = document.querySelector(`#${position}`)
+        const tds = tr.querySelectorAll('td')
+        tds[1].innerText = ''
+        tds[2].innerText = ''
+    })
+
+    // Populate the table with new data
+    rosterCaption.innerText = roster.name
     roster.players.forEach(player => {
         // Find the roster table row that corresponds to the player's roster_position
         const tr = document.querySelector(`#${player.roster_position}`)
@@ -136,7 +187,6 @@ const displayRoster = roster => {
         tds[1].innerText = `${player.first_name} ${player.last_name}`
         tds[2].innerText = player.bye_week
     })
-
 }
 
 const fetchAndDisplayRoster = rosterId => {
