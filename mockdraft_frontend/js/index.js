@@ -135,27 +135,55 @@ const determineRosterPosition = async (position, rosterId) => {
     const openPositions = findOpenRosterPositions(roster)
     const firstBench = openPositions.find(position => position.startsWith('BENCH'))
 
-    console.log(firstBench)
-
-    // // Select one of the open positions based on some logic based on the position
-    // let bench = false
-    // switch (position) {
-    //     case 'QB':
-    //         if (openPositions.includes(position)) {
-    //             return position
-    //         }
-    //     case 'RB':
-
-    //     case 'WR':
-
-    //     case 'TE':
-
-    //     case 'DST':
-
-    //     case 'K':
-
-    // }
-
+    // Select one of the open positions based on some logic based on the position
+    switch (position) {
+        case 'QB':
+            if (openPositions.includes('QB')) {
+                return 'QB'
+            } else {
+                return firstBench
+            }
+        case 'RB':
+            if (openPositions.includes('RB1')) {
+                return 'RB1'
+            } else if (openPositions.includes('RB2')) {
+                return 'RB2'
+            } else if (openPositions.includes('FLEX')) {
+                return 'FLEX'
+            } else {
+                return firstBench
+            }
+        case 'WR':
+            if (openPositions.includes('WR1')) {
+                return 'WR1'
+            } else if (openPositions.includes('WR2')) {
+                return 'WR2'
+            } else if (openPositions.includes('FLEX')) {
+                return 'FLEX'
+            } else {
+                return firstBench
+            }
+        case 'TE':
+            if (openPositions.includes('TE')) {
+                return 'TE'
+            } else if (openPositions.includes('FLEX')) {
+                return 'FLEX'
+            } else {
+                return firstBench
+            }
+        case 'DST':
+            if (openPositions.includes('DST')) {
+                return 'DST'
+            } else {
+                return firstBench
+            }
+        case 'K':
+            if (openPositions.includes('K')) {
+                return 'K'
+            } else {
+                return firstBench
+            }
+    }
 }
 
 
@@ -165,7 +193,9 @@ const draftPlayer = async (playerId, rosterId) => {
     const player = await fetchPlayer(playerId)
 
     // Determine the roster position for the player to fill
-    const rosterPosition = determineRosterPosition(player.position, rosterId)
+    const rosterPosition = await determineRosterPosition(player.position, rosterId)
+
+    console.log(rosterPosition)
 
     // // Make a request to add the player to the roster in a certain position
     // reqObj = {
