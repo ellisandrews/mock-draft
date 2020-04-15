@@ -1,32 +1,49 @@
 {
+  "owners": [
+    {
+      "id": 1,
+      "name": "Ellis"
+    },
+    {
+      "id": 2,
+      "name": "Dwag"
+    },
+    {
+      "name": "Kid",
+      "id": 3
+    }
+  ],
   "rosters": [
     {
       "id": 1,
       "name": "Jabronis",
+      "owner_id": 1,
       "players": [
-          {
-            "first_name": "Adrian",
-            "last_name": "Peterson",
-            "overall_rank": 1,
-            "team": "MIN",
-            "nerd_rank": 1.826,
-            "roster_position": "RB1",
-            "position_rank": 1,
-            "bye_week": 5,
-            "position": "RB",
-            "roster_id": 1,
-            "id": 1
-          }
+        {
+          "first_name": "Adrian",
+          "last_name": "Peterson",
+          "overall_rank": 1,
+          "team": "MIN",
+          "nerd_rank": 1.826,
+          "roster_position": "RB1",
+          "position_rank": 1,
+          "bye_week": 5,
+          "position": "RB",
+          "roster_id": 1,
+          "id": 1
+        }
       ]
     },
     {
       "id": 2,
       "name": "Dwag's Team",
+      "owner_id": 2,
       "players": []
     },
     {
+      "name": "Kid's Team",
+      "owner_id": 3,
       "id": 3,
-      "name": "Another Team",
       "players": []
     }
   ],
