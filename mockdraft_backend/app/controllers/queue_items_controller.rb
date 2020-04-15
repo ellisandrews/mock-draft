@@ -17,4 +17,4 @@ class QueueItemsController < ApplicationController
         params.permit(:player_id, :owner_id)
     end
 
-def
+end
