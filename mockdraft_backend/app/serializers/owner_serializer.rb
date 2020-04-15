@@ -5,7 +5,10 @@ class OwnerSerializer
             roster: {
                 except: [:created_at, :updated_at]
             },
-            queue: {
+            queued_players: {
+                except: [:created_at, :updated_at]
+            },
+            rostered_players: {
                 except: [:created_at, :updated_at]
             }
         },
