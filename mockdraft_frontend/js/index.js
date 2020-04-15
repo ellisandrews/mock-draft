@@ -10,14 +10,7 @@ const playerPoolTable = document.querySelector("#player-pool-table")
 const playerQueueTable = document.querySelector("#player-queue-table")
 
 // Helper functions
-const parseJSONResponse = response => {
-    if (response.status >= 400) {
-        const msg = `Bad response from server (${response.status})`
-        alert(msg)
-        throw new Error(msg);
-    }
-    return response.json();
-}
+const parseJSONResponse = response => response.json()
 const logError = error => console.log(error)
 
 const makePlayerTableRow = (player, buttonText='Queue') => {
@@ -233,10 +226,10 @@ const addPlayerToRoster = (playerId, rosterId, rosterPosition) => {
 
 const draftPlayer = (playerId, rosterId) => {
     // Draft a player to a roster (assigning the roster_position appropriately)
-    fetchPlayer(playerId)
-        .then(player => determineRosterPosition(player.position, rosterId))
-        .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
-        .then(fetchAndDisplayRoster(rosterId))
+    return fetchPlayer(playerId)
+            .then(player => determineRosterPosition(player.position, rosterId))
+            .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
+            .then(fetchAndDisplayRoster(rosterId))
 }
 
 const displayRoster = roster => {
@@ -273,9 +266,9 @@ const fetchPlayer = playerId => {
 }
 
 const fetchAndDisplayRoster = rosterId => {
-    fetchRoster(rosterId)    
-        .then(displayRoster)
-        .catch(logError)
+    return fetchRoster(rosterId)    
+            .then(displayRoster)
+            .catch(logError)
 }
 
 const displayRosterDropdown = () => {
@@ -291,29 +284,25 @@ const displayRosterDropdown = () => {
         }
     })
 
-    fetch(`${APIBASE}/rosters`)
-        .then(parseJSONResponse)
-        .then(rosters => {
-            // Make a default value for the roster dropdown
-            const defaultOption = document.createElement('option')
-            defaultOption.value = ''
-            defaultOption.innerText = 'Select'
-            select.appendChild(defaultOption)
+    // Make a default value for the roster dropdown
+    const defaultOption = document.createElement('option')
+    defaultOption.value = ''
+    defaultOption.innerText = 'Select'
+    select.appendChild(defaultOption)
 
-            // Make an option for each roster and append it to the dropdown
-            rosters.forEach(roster => {
-                const option = document.createElement('option')
-                option.value = roster.id
-                option.innerText = roster.name
-                select.appendChild(option)
+    // Make an option for each owner's roster and append it to the dropdown
+    const allOwners = [user, ...opponents]
+    allOwners.forEach(owner => {
+        const option = document.createElement('option')
+        option.value = owner.roster.id
+        option.innerText = owner.roster.name
+        select.appendChild(option)
+    })
 
-            document.querySelector("#roster-select-div").append(label, select)
-            })
-        })
-        .catch(logError)
+    document.querySelector("#roster-select-div").append(label, select)
 }
 
-const handleSetupFormSubmit = event => {
+const handleSetupFormSubmit = async event => {
     event.preventDefault()
     
     const username = document.querySelector("#owner-name").value
@@ -332,8 +321,16 @@ const handleSetupFormSubmit = event => {
         return false
     }
 
+    // TODO: Clear out any already rostered players from previous drafts?
+    // Fetch the specified number of oppenents from the backend. 
+    // Store as a global variable
+    opponents = await fetch(`${APIBASE}/owners`)
+                    .then(parseJSONResponse)
+                    .then(owners => owners.slice(0, numOpponents))
+                    .catch(logError) 
+
     // Request to add the Owner to the database
-    const reqObj = {
+    let reqObj = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -343,33 +340,38 @@ const handleSetupFormSubmit = event => {
         })
     }
 
-    fetch(`${APIBASE}/owners`, reqObj)
-        .then(parseJSONResponse)
-        .then(owner => {
-            // Request to add the Roster to the database
-            const reqObj = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: teamName,
-                    owner_id: owner.id
-                })
-            }
+    const owner = await fetch(`${APIBASE}/owners`, reqObj)
+                    .then(parseJSONResponse)
+                    .catch(logError)
 
-            fetch(`${APIBASE}/rosters`, reqObj)
-                .then(parseJSONResponse)
-                .then(roster => {
-                    userRosterId = roster.id  // Save as global variable
-                    fetchAndDisplayRoster(roster.id)
-                })
-                .catch(logError)
+    // Request to add a Roster for the owner to the database
+    reqObj = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: teamName,
+            owner_id: owner.id
         })
-        .then(main)
-        .catch(logError)
+    }
 
-    // TODO: Create all the fake players
+    const roster = await fetch(`${APIBASE}/rosters`, reqObj)
+                    .then(parseJSONResponse)
+                    .catch(logError)
+
+    // Store final user (owner) as a global variable
+    user = await fetch(`${APIBASE}/owners/${owner.id}`)
+                .then(parseJSONResponse)
+                .catch(logError)
+
+    // Display the user's roster by default
+    await fetchAndDisplayRoster(user.roster.id)
+
+    displayRosterDropdown()
+    fetchAndPopulatePlayerPool()
+    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
+    playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
 }
 
 
@@ -377,11 +379,3 @@ const handleSetupFormSubmit = event => {
 
 // Listen for a click on the form submit button. Nothing happens until then.
 document.querySelector("#start-draft-button").addEventListener('click', handleSetupFormSubmit)
-
-// Main function to call once the setup form has been submitted
-const main = () => {
-    fetchAndPopulatePlayerPool()
-    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
-    playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
-    displayRosterDropdown()
-}
