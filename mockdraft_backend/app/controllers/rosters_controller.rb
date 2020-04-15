@@ -11,11 +11,20 @@ class RostersController < ApplicationController
     end
 
     def create
-        
+        roster = Roster.create!(roster_params)
+        render json: RosterSerializer.new(roster).to_serialized_json
     end
 
     def update
+        roster = Roster.find(params[:id])
+        roster.update!(roster_params)
+        render json: RosterSerializer.new(roster).to_serialized_json
+    end
+
+    private
+
+    def roster_params
+        params.permit(:name, :owner_id)
     end
 
 end
-

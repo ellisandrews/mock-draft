@@ -10,17 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 5) do
+ActiveRecord::Schema.define(version: 4) do
 
   create_table "owners", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "playerqueues", force: :cascade do |t|
-    t.integer "player_id"
-    t.integer "queue_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -40,9 +33,9 @@ ActiveRecord::Schema.define(version: 5) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "queues", force: :cascade do |t|
-    t.string "name"
+  create_table "queue_items", force: :cascade do |t|
     t.integer "owner_id"
+    t.integer "player_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
