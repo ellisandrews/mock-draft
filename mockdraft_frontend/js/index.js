@@ -1,7 +1,7 @@
 // Backend JSON API URL base
 const APIBASE = 'http://localhost:3000'
 const rosterPositions = [
-    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DST', 'K', 'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
+    'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DEF', 'K', 'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
 ]
 const playersCache = {}
 
@@ -84,7 +84,7 @@ const handlePlayerPoolTableClick = event => {
 
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
-            draftPlayer(playerId, userRosterId)
+            draftPlayer(playerId, user.roster.id)
             
             // Remove the player from the pool
             playerPoolRow.remove()
@@ -119,7 +119,7 @@ const handlePlayerQueueTableClick = event => {
 
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
-            draftPlayer(playerId, userRosterId)
+            draftPlayer(playerId, user.roster.id)
 
             // Remove the player from the queue table
             playerQueueRow.remove()
@@ -191,9 +191,9 @@ const determineRosterPosition = (position, rosterId) => {
                     } else {
                         return firstBench
                     }
-                case 'DST':
-                    if (openPositions.includes('DST')) {
-                        return 'DST'
+                case 'DEF':
+                    if (openPositions.includes('DEF')) {
+                        return 'DEF'
                     } else {
                         return firstBench
                     }
@@ -211,6 +211,7 @@ const addPlayerToRoster = (playerId, rosterId, rosterPosition) => {
     // Make a request to add the player to the roster in a certain position
     reqObj = {
         method: 'PATCH',
+        // mode: 'no-cors',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -229,10 +230,17 @@ const draftPlayer = (playerId, rosterId) => {
     return fetchPlayer(playerId)
             .then(player => determineRosterPosition(player.position, rosterId))
             .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
-            .then(fetchAndDisplayRoster(rosterId))
+            .then(() => {
+                // If the drafting roster is currently displayed, update it.
+                if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
+                    fetchAndDisplayRoster(rosterId)
+                }
+            })
 }
 
 const displayRoster = roster => {
+
+    document.querySelector("#roster-show").dataset.rosterId = roster.id
 
     const rosterCaption = document.querySelector('#roster-caption')
 
@@ -356,7 +364,7 @@ const handleSetupFormSubmit = async event => {
         })
     }
 
-    const roster = await fetch(`${APIBASE}/rosters`, reqObj)
+    await fetch(`${APIBASE}/rosters`, reqObj)
                     .then(parseJSONResponse)
                     .catch(logError)
 
