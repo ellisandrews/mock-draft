@@ -11,7 +11,6 @@ class CreatePlayers < ActiveRecord::Migration[5.2]
       t.integer :overall_rank
       t.integer :bye_week
       t.integer :roster_id
-      t.integer :owner_id
 
       t.timestamps
     end
