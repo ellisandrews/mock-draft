@@ -21,7 +21,7 @@ const makePlayerTableRow = (player, buttonText='Queue') => {
     // Make <td> elements for each field
     tr.innerHTML = `
                    <td>${player.overall_rank}</td>
-                   <td>${player.displayName}</td>
+                   <td>${player.first_name} ${player.last_name}</td>
                    <td>${player.position}</td>
                    <td>${player.position_rank}</td>
                    <td>${player.team}</td>
@@ -266,18 +266,118 @@ const fetchPlayer = playerId => {
 }
 
 const fetchAndDisplayRoster = rosterId => {
-        fetchRoster(rosterId)    
+    fetchRoster(rosterId)    
         .then(displayRoster)
         .catch(logError)
 }
 
-// Entry point for execution
+const handleSetupFormSubmit = event => {
+    event.preventDefault()
+    
+    const username = document.querySelector("#owner-name").value
+    const teamName = document.querySelector("#team-name").value
+    const numOpponents = document.querySelector("#num-opponents").value
+
+    // Perform some validation on input
+    if (!username) {
+        alert('Username is required!')
+        return false
+    } else if (!teamName) {
+        alert('Fantasy Team Name is required!')
+        return false
+    } else if (!numOpponents || parseInt(numOpponents) < 1 || parseInt(numOpponents) > 19) {
+        alert('Number of Opponents is required, and must be between 1 and 19!')
+        return false
+    }
+
+    // Request to add the Owner to the database
+    reqObj = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: username
+        })
+    }
+
+    fetch(`${APIBASE}/owners`, reqObj)
+        .then(parseJSONResponse)
+        .then(owner => {
+            // Request to add the Roster to the database
+            reqObj = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: teamName,
+                    owner_id: owner.id
+                })
+            }
+
+            fetch(`${APIBASE}/rosters`, reqObj)
+                .then(parseJSONResponse)
+                .then(roster => fetchAndDisplayRoster(roster.id))
+                .catch(logError)
+        })
+        .catch(logError)
+
+
+    // TODO: Create all the fake players
+
+    // Main function execution
+    main()
+}
+
+const displayRosterDropdown = () => {
+    
+    const label = document.createElement('label')
+    label.innerText = "View Roster: "
+
+    const select = document.createElement('select')
+    select.id = "roster-dropdown"
+    select.addEventListener('change', () => {
+        if (select.value) {
+            fetchAndDisplayRoster(select.value)
+        }
+    })
+
+    fetch(`${APIBASE}/rosters`)
+        .then(parseJSONResponse)
+        .then(rosters => {
+            // Make a default value for the roster dropdown
+            const defaultOption = document.createElement('option')
+            defaultOption.value = ''
+            defaultOption.innerText = 'Select'
+            select.appendChild(defaultOption)
+
+            // Make an option for each roster and append it to the dropdown
+            rosters.forEach(roster => {
+                const option = document.createElement('option')
+                option.value = roster.id
+                option.innerText = roster.name
+                select.appendChild(option)
+
+            document.querySelector("#roster-select-div").append(label, select)
+            })
+        })
+        .catch(logError)
+}
+
+
+// ----- EXECUTION ----- // 
+
+// Listen for a click on the form submit button. Nothing happens until then.
+// document.querySelector("#start-draft-button").addEventListener('click', handleSetupFormSubmit)
+
+// Main function to call once the setup form has been submitted
 const main = () => {
     fetchAndPopulatePlayerPool()
     playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
-    fetchAndDisplayRoster(1)  // Currently hard coded!!
+    displayRosterDropdown()
 }
 
-// Execution
+
 main()
