@@ -4,6 +4,7 @@ const rosterPositions = [
     'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DEF', 'K', 'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
 ]
 const playersPool = []
+let draftRound = 1
 
 // Helper functions
 const parseJSONResponse = response => response.json()
@@ -67,6 +68,26 @@ const fetchAndPopulatePlayerPool = () => {
         .catch(logError)
 }
 
+
+const removeDraftedPlayer = playerId => {
+    // Delete the player from the local playersPool
+    const index = playersPool.findIndex(player => player.id === parseInt(playerId))
+    playersPool.splice(index, 1)
+
+    // Delete the player from the pool and queue tables
+    const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+    const playerQueueRow = document.querySelector("#player-queue-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+
+    if (playerPoolRow) {
+        playerPoolRow.remove()
+    }
+
+    if (playerQueueRow) {
+        playerQueueRow.remove()
+    }
+}
+
+
 // Hande clicks on the the player pool table
 const handlePlayerPoolTableClick = event => {
     // Get the target element of the click event
@@ -90,18 +111,18 @@ const handlePlayerPoolTableClick = event => {
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
-            
-            // Remove the player from the pool
-            playerPoolRow.remove()
 
-            // Remove the player from the queue if necessary
-            const playerQueueRow = document.querySelector("#player-queue-tbody").querySelector(`tr[data-player-id='${playerId}']`)
-            if (playerQueueRow) {
-                playerQueueRow.remove()
-            }
+            // // Remove the player from the pool
+            // playerPoolRow.remove()
+
+            // // Remove the player from the queue if necessary
+            // const playerQueueRow = document.querySelector("#player-queue-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+            // if (playerQueueRow) {
+            //     playerQueueRow.remove()
+            // }
 
             // Kick off computer owner turns
-            // drafter()
+            runDraftRound()
         }
     }
 }
@@ -129,14 +150,14 @@ const handlePlayerQueueTableClick = event => {
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
 
-            // Remove the player from the queue table
-            playerQueueRow.remove()
+            // // Remove the player from the queue table
+            // playerQueueRow.remove()
 
-            // Remove the player from the pool
-            const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
-            if (playerPoolRow) {
-                playerPoolRow.remove()
-            }
+            // // Remove the player from the pool
+            // const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
+            // if (playerPoolRow) {
+            //     playerPoolRow.remove()
+            // }
         }
     }
 }
@@ -232,28 +253,23 @@ const addPlayerToRoster = (playerId, rosterId, rosterPosition) => {
     return fetch(`${APIBASE}/players/${playerId}`, reqObj).then(parseJSONResponse)
 }
 
-const draftPlayer = async (playerId, rosterId) => {
+const draftPlayer = (playerId, rosterId) => {
     // Draft a player to a roster (assigning the roster_position appropriately)
-    
-    const player = await fetchPlayer(playerId)
-    const rosterPosition = await determineRosterPosition(player.position, rosterId)
+    removeDraftedPlayer(playerId)
 
-    await addPlayerToRoster(playerId, rosterId, rosterPosition)
+    fetchPlayer(playerId)
+        .then(player => determineRosterPosition(player.position, rosterId))
+        .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
+        .then(player => {
+            const li = document.createElement('li')
+            li.innerText = `Drafted ${player.first_name} ${player.last_name} (${player.position})`
+            document.querySelector('#activity-log-list').appendChild(li)
+        })
 
     // If the drafting roster is currently displayed, update it.
     if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
         fetchAndDisplayRoster(rosterId)
     }
-
-    // Delete the player from the local playersPool
-    const index = playersPool.findIndex(player => player.id === parseInt(playerId))
-    playersPool.splice(index, 1)
-
-    // Put the selection in the activity log
-    const roster = await(fetchRoster(rosterId))
-    const li = document.createElement('li')
-    li.innerText = `${roster.owner.name} drafted ${player.first_name} ${player.last_name} (${player.position})`
-    document.querySelector('#activity-log-list').appendChild(li)
 }
 
 const displayRoster = roster => {
@@ -356,6 +372,8 @@ const displayDraftOrder = () => {
 
 const picker = (roster, end=false) => {
     
+    console.log('PICKING FOR OWNER:', roster.owner.name)
+
     const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
     const end_pos = ['K', 'DEF']
     const pos_maxes = {"RB":2, "WR": 2, "QB": 1, "TE": 1}
@@ -376,38 +394,43 @@ const picker = (roster, end=false) => {
         bestPlayer = playersPool.find(player=>player.position === end_pos.shift());
     }
     
-    debugger
-
     draftPlayer(bestPlayer.id, roster.id)
 
     return bestPlayer
 }
 
-const drafter = async (owner, end) => {
+const drafter = (owner, end) => {
 
     // Fetch the roster from the backend for the owner
-    const roster = await fetchRoster(owner.roster.id)
+    fetchRoster(owner.roster.id)
+    .then(roster => {
+        // Draft the best available player
+        const draftedPlayer = picker(roster, end);
 
-    // Draft the best available player
-    const draftedPlayer = picker(roster, end);
-
-    // Log or update frontend (side bar) with their pick
-    console.log(`${owner.name} drafted player: ${draftedPlayer.first_name} ${draftedPlayer.last_name}`)
+        // Log or update frontend (side bar) with their pick
+        console.log(`${owner.name} drafted player: ${draftedPlayer.first_name} ${draftedPlayer.last_name}`)
+    })
 }
 
-const runDraft = () => {
+const runDraftRound = () => {
     
-    for (let round = 1; round <= 16; round++) {
-
-        draftOrder.forEach(owner => {
-            if (owner === user) {
-                // TODO!!
-                console.log('User turn')
-            } else {
-                drafter(owner, round<15)  // Kicker and Defense last 2 rounds
-            }
-        })
+    // What we want
+    // opponents.forEach(owner => drafter(owner, draftRound>=15))
+    // draftRound++
+    
+    let i = 0
+    const draftLoop = () => {         
+        setTimeout(() => {   
+            drafter(opponents[i], draftRound>=15) 
+            i++;                    
+            if (i < opponents.length) { 
+                draftLoop();             
+            }                      
+            }, 3000)
     }
+
+    draftLoop()
+    draftRound++
 }
 
 // ------------ END PICKING LOGIC ----------
