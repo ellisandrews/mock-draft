@@ -234,9 +234,10 @@ const addPlayerToRoster = (playerId, rosterId, rosterPosition) => {
 
 const draftPlayer = async (playerId, rosterId) => {
     // Draft a player to a roster (assigning the roster_position appropriately)
+    
     const player = await fetchPlayer(playerId)
     const rosterPosition = await determineRosterPosition(player.position, rosterId)
-    
+
     await addPlayerToRoster(playerId, rosterId, rosterPosition)
 
     // If the drafting roster is currently displayed, update it.
@@ -247,6 +248,12 @@ const draftPlayer = async (playerId, rosterId) => {
     // Delete the player from the local playersPool
     const index = playersPool.findIndex(player => player.id === parseInt(playerId))
     playersPool.splice(index, 1)
+
+    // Put the selection in the activity log
+    const roster = await(fetchRoster(rosterId))
+    const li = document.createElement('li')
+    li.innerText = `${roster.owner.name} drafted ${player.first_name} ${player.last_name} (${player.position})`
+    document.querySelector('#activity-log-list').appendChild(li)
 }
 
 const displayRoster = roster => {
@@ -407,6 +414,7 @@ const runDraft = () => {
 
 const handleStartDraftClick = event => {
 
+    // Grey out the "Start Draft" button
     event.target.disabled = true
 
     const playerPoolTable = document.querySelector("#player-pool-table")
