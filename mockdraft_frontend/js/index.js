@@ -342,7 +342,7 @@ const displayDraftOrder = () => {
 //     }, 1000);
 // }
 
-function picker(roster, end=false) {
+const picker = (roster, end=false) => {
     
     const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
     const end_pos = ['K', 'DEF']
@@ -364,33 +364,39 @@ function picker(roster, end=false) {
         bestPlayer = playersPool.find(player=>player.position === end_pos.shift());
     }
     
+    debugger
+
     draftPlayer(bestPlayer.id, roster.id)
+
+    return bestPlayer
 }
 
-// names = ["Ellis Andrews", "Jack Overby", "Mike Pottebaum", "Yusuf Celep", "Jason Melton", "Duke Greene", "Derick Castillo", "Raza Jafri"];
-// rosters = [[], [], [], [], [], [], [], []];
+const drafter = async (owner, end) => {
 
-let i = 0;
-let round = 0;
+    // Fetch the roster from the backend for the owner
+    const roster = await fetchRoster(owner.roster.id)
 
-function drafter() {
+    // Draft the best available player
+    const draftedPlayer = picker(roster, end);
 
-    setTimeout(function() {
-        picker(pool, rosters[j]);
-        console.log(`With pick #${round * 8 + i + 1}, ${draftOrder[i]} selects ${rosters[round][i].displayName}`);
-        i++;
-        
-        if (round < 8) {
-            if (i >= rosters.length) {
-                i = 0;
-                round++;
+    // Log or update frontend (side bar) with their pick
+    console.log(`${owner.name} drafted player: ${draftedPlayer.first_name} ${draftedPlayer.last_name}`)
+}
+
+const runDraft = () => {
+    
+    for (let round = 1; round <= 16; round++) {
+
+        draftOrder.forEach(owner => {
+            if (owner === user) {
+                // TODO!!
+                console.log('User turn')
+            } else {
+                drafter(owner, round<15)  // Kicker and Defense last 2 rounds
             }
-            drafter();
-        }
-
-    }, 1000)
+        })
+    }
 }
-
  
 // ------------ END PICKING LOGIC ----------
 
@@ -480,7 +486,7 @@ const handleSetupFormSubmit = async event => {
     // Once user has drafted, loop through all the computer owner turns
     //     1. Select a player
     //     2. Add player to roster (frontend and backend)
-    
+    runDraft()
 }
 
 
