@@ -209,9 +209,8 @@ const determineRosterPosition = (position, rosterId) => {
 
 const addPlayerToRoster = (playerId, rosterId, rosterPosition) => {
     // Make a request to add the player to the roster in a certain position
-    reqObj = {
+    const reqObj = {
         method: 'PATCH',
-        // mode: 'no-cors',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -225,17 +224,17 @@ const addPlayerToRoster = (playerId, rosterId, rosterPosition) => {
     return fetch(`${APIBASE}/players/${playerId}`, reqObj).then(parseJSONResponse)
 }
 
-const draftPlayer = (playerId, rosterId) => {
+const draftPlayer = async (playerId, rosterId) => {
     // Draft a player to a roster (assigning the roster_position appropriately)
-    return fetchPlayer(playerId)
-            .then(player => determineRosterPosition(player.position, rosterId))
-            .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
-            .then(() => {
-                // If the drafting roster is currently displayed, update it.
-                if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
-                    fetchAndDisplayRoster(rosterId)
-                }
-            })
+    const player = await fetchPlayer(playerId)
+    const rosterPosition = await determineRosterPosition(player.position, rosterId)
+    
+    await addPlayerToRoster(playerId, rosterId, rosterPosition)
+
+    // If the drafting roster is currently displayed, update it.
+    if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
+        fetchAndDisplayRoster(rosterId)
+    }
 }
 
 const displayRoster = roster => {
@@ -374,7 +373,7 @@ const handleSetupFormSubmit = async event => {
                 .catch(logError)
 
     // Display the user's roster by default
-    await fetchAndDisplayRoster(user.roster.id)
+    fetchAndDisplayRoster(user.roster.id)
 
     displayRosterDropdown()
     fetchAndPopulatePlayerPool()
