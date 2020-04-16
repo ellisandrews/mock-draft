@@ -5,10 +5,6 @@ const rosterPositions = [
 ]
 const playersPool = []
 
-// Commonly used permanent nodes
-const playerPoolTable = document.querySelector("#player-pool-table")
-const playerQueueTable = document.querySelector("#player-queue-table")
-
 // Helper functions
 const parseJSONResponse = response => response.json()
 const logError = error => console.log(error)
@@ -413,6 +409,9 @@ const handleStartDraftClick = event => {
 
     event.target.disabled = true
 
+    const playerPoolTable = document.querySelector("#player-pool-table")
+    const playerQueueTable = document.querySelector("#player-queue-table")
+    
     // Add Draft and Queue button event listeners
     playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
