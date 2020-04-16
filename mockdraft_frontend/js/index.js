@@ -309,6 +309,17 @@ const displayRosterDropdown = () => {
     document.querySelector("#roster-select-div").append(label, select)
 }
 
+const displayDraftOrder = () => {
+    const orderDiv = document.querySelector('#draft-order')
+    const ol = document.createElement('ol')
+    draftOrder.forEach(owner => {
+        const li = document.createElement('li')
+        li.innerText = owner.name
+        ol.appendChild(li)
+    })
+    orderDiv.appendChild(ol)
+}
+
 const handleSetupFormSubmit = async event => {
     event.preventDefault()
 
@@ -329,6 +340,7 @@ const handleSetupFormSubmit = async event => {
     }
 
     // Don't let the user edit anything in the form after it's successfully submitted
+    // TODO: hide/delete form, and make a header with the username
     const form = event.target.parentElement
     const inputs = form.querySelectorAll('input')
     inputs.forEach(input => input.disabled = true)
@@ -377,13 +389,18 @@ const handleSetupFormSubmit = async event => {
                 .then(parseJSONResponse)
                 .catch(logError)
 
-    // Display the user's roster by default
-    fetchAndDisplayRoster(user.roster.id)
-
-    displayRosterDropdown()
-    fetchAndPopulatePlayerPool()
-    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
+    fetchAndDisplayRoster(user.roster.id) // Display the user's roster by default
+    displayRosterDropdown()               // Make the dropdown select for viewing other rosters
+    fetchAndPopulatePlayerPool()          // Populate the pool table with all the players
+    
+    // Add Draft and Queue button event listeners
+    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
+
+    // Establish draft order -- TODO: Randomize!
+    draftOrder = [user, ...opponents]
+    displayDraftOrder()
+
 }
 
 
