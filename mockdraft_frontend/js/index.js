@@ -342,44 +342,54 @@ const displayDraftOrder = () => {
 //     }, 1000);
 // }
 
-// function picker(pool, lineup, end=false) {
-//     const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
-//     const end_pos = ['K', 'DEF']
-//     let best;
-//     if (!end) {
-//         lineup.forEach(ho=>all_pos[ho.position]+=1);
-//         avail_pos = Object.keys(all_pos).filter(ho=>all_pos[ho]<pos_maxes[ho]);
-//         best = avail_pos ? pool.findIndex(player=>avail_pos.includes(player.position)) : pool.findIndex(player=>all_pos.includes(player.position));
-//     }
-//     else {
-//         best = pool.findIndex(player=>player.position === end_pos.shift());
-//     }
-//     lineup.push(pool.splice(best, 1)[0]);
-// }
+function picker(roster, end=false) {
+    
+    const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
+    const end_pos = ['K', 'DEF']
+    const pos_maxes = {"RB":2, "WR": 2, "QB": 1, "TE": 1}
+
+    let bestPlayer;
+    if (!end) {
+        // Count players in roster
+        roster.players.forEach(player => all_pos[player.position]+=1);
+        
+        // Get array of unmaxed out positions
+        avail_pos = Object.keys(all_pos).filter(ho => all_pos[ho] < pos_maxes[ho]);
+        
+        // If there are unmaxed out positions, get highest ranked player of needed position.
+        // Otherwise, all positions are maxed out and just take the highest ranked player.
+        bestPlayer = avail_pos ? playersPool.find(player=>avail_pos.includes(player.position)) : playersPool.find(player=>all_pos.includes(player.position));
+    }
+    else {
+        bestPlayer = playersPool.find(player=>player.position === end_pos.shift());
+    }
+    
+    draftPlayer(bestPlayer.id, roster.id)
+}
 
 // names = ["Ellis Andrews", "Jack Overby", "Mike Pottebaum", "Yusuf Celep", "Jason Melton", "Duke Greene", "Derick Castillo", "Raza Jafri"];
 // rosters = [[], [], [], [], [], [], [], []];
 
-// let i = 0;
-// let round = 0;
+let i = 0;
+let round = 0;
 
-// function drafter() {
+function drafter() {
 
-//     setTimeout(function() {
-//         picker(pool, rosters[j]);
-//         console.log(`With pick #${round * 8 + i + 1}, ${names[i]} selects ${rosters[round][i].displayName}`);
-//         i++;
+    setTimeout(function() {
+        picker(pool, rosters[j]);
+        console.log(`With pick #${round * 8 + i + 1}, ${draftOrder[i]} selects ${rosters[round][i].displayName}`);
+        i++;
         
-//         if (round < 8) {
-//             if (i >= rosters.length) {
-//                 i = 0;
-//                 round++;
-//             }
-//             drafter();
-//         }
+        if (round < 8) {
+            if (i >= rosters.length) {
+                i = 0;
+                round++;
+            }
+            drafter();
+        }
 
-//     }, 1000)
-// }
+    }, 1000)
+}
 
  
 // ------------ END PICKING LOGIC ----------
