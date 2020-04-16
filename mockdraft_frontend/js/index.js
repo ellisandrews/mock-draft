@@ -251,9 +251,8 @@ const draftPlayer = (playerId, rosterId) => {
         })
 
     // If the drafting roster is currently displayed, update it.
-    if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
-        fetchAndDisplayRoster(rosterId)
-    }
+    const displayedRosterId = document.querySelector("#roster-show").dataset.rosterId
+    fetchAndDisplayRoster(displayedRosterId)
 }
 
 const displayRoster = roster => {
