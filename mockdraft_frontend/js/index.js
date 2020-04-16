@@ -68,7 +68,6 @@ const fetchAndPopulatePlayerPool = () => {
         .catch(logError)
 }
 
-
 const removeDraftedPlayer = playerId => {
     // Delete the player from the local playersPool
     const index = playersPool.findIndex(player => player.id === parseInt(playerId))
@@ -86,7 +85,6 @@ const removeDraftedPlayer = playerId => {
         playerQueueRow.remove()
     }
 }
-
 
 // Hande clicks on the the player pool table
 const handlePlayerPoolTableClick = event => {
@@ -112,15 +110,6 @@ const handlePlayerPoolTableClick = event => {
         } else if (target.innerText === 'Draft') {
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
-
-            // // Remove the player from the pool
-            // playerPoolRow.remove()
-
-            // // Remove the player from the queue if necessary
-            // const playerQueueRow = document.querySelector("#player-queue-tbody").querySelector(`tr[data-player-id='${playerId}']`)
-            // if (playerQueueRow) {
-            //     playerQueueRow.remove()
-            // }
 
             // Kick off computer owner turns
             runDraftRound()
@@ -151,14 +140,8 @@ const handlePlayerQueueTableClick = event => {
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
 
-            // // Remove the player from the queue table
-            // playerQueueRow.remove()
-
-            // // Remove the player from the pool
-            // const playerPoolRow = document.querySelector("#player-pool-tbody").querySelector(`tr[data-player-id='${playerId}']`)
-            // if (playerPoolRow) {
-            //     playerPoolRow.remove()
-            // }
+            // Kick off computer owner turns
+            runDraftRound()
         }
     }
 }
