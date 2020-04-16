@@ -246,7 +246,7 @@ const draftPlayer = (playerId, rosterId) => {
         .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
         .then(player => {
             const li = document.createElement('li')
-            li.innerText = `Drafted ${player.first_name} ${player.last_name} (${player.position})`
+            li.innerText = `${player.owner.name} drafted ${player.first_name} ${player.last_name} (${player.position})`
             document.querySelector('#activity-log-list').appendChild(li)
         })
 

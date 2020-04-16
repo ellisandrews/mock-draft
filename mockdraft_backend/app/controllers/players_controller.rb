@@ -2,18 +2,18 @@ class PlayersController < ApplicationController
 
     def index
         players = Player.all
-        render json: players
+        render json: players.map { |player| PlayerSerializer.new(player).to_serialized_hash }
     end
 
     def show
         player = Player.find(params[:id])
-        render json: player
+        render json: PlayerSerializer.new(player).to_serialized_json
     end
 
     def update
        player = Player.find(params[:id])
        player.update!(player_params)
-       render json: player
+       render json: PlayerSerializer.new(player).to_serialized_json
     end
 
     private
