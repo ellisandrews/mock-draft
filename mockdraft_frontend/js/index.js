@@ -3,7 +3,7 @@ const APIBASE = 'http://localhost:3000'
 const rosterPositions = [
     'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DEF', 'K', 'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
 ]
-const playersCache = {}
+const playersPool = []
 
 // Commonly used permanent nodes
 const playerPoolTable = document.querySelector("#player-pool-table")
@@ -44,7 +44,7 @@ const populatePlayerPoolTable = players => {
 const cachePlayers = players => {
     // Ad the players to the global cache
     players.forEach(player => {
-        playersCache[player.id] = player
+        playersPool.push(player)
     })
 
     // Return the original data structure for further processing
@@ -76,7 +76,7 @@ const handlePlayerPoolTableClick = event => {
 
         if (target.innerText === 'Queue') {
             // Add make a new player row and append it to the Queue table
-            const tr = makePlayerTableRow(playersCache[playerId], 'Remove')
+            const tr = makePlayerTableRow(playersPool[parseInt(playerId) - 1], 'Remove')
             document.querySelector("#player-queue-tbody").appendChild(tr)
 
             // Hide the Queue button for that player
@@ -94,6 +94,9 @@ const handlePlayerPoolTableClick = event => {
             if (playerQueueRow) {
                 playerQueueRow.remove()
             }
+
+            // Kick off computer owner turns
+            // drafter()
         }
     }
 }
@@ -235,6 +238,10 @@ const draftPlayer = async (playerId, rosterId) => {
     if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
         fetchAndDisplayRoster(rosterId)
     }
+
+    // Delete the player from the local playersPool
+    const index = playersPool.findIndex(player => player.id === parseInt(playerId))
+    playersPool.splice(index, 1)
 }
 
 const displayRoster = roster => {
@@ -309,6 +316,90 @@ const displayRosterDropdown = () => {
     document.querySelector("#roster-select-div").append(label, select)
 }
 
+const displayDraftOrder = () => {
+    const orderDiv = document.querySelector('#draft-order')
+    const ol = document.createElement('ol')
+    draftOrder.forEach(owner => {
+        const li = document.createElement('li')
+        li.innerText = owner.name
+        ol.appendChild(li)
+    })
+    orderDiv.appendChild(ol)
+}
+
+// ---------PICKING LOGIG --------
+
+// function timer(t=120) {
+//     let id = setInterval(function() {
+//         if (t >= 0) {
+//             console.log(`${Math.floor(t / 60)}:${t % 60 >= 10 ? "" : "0"}${t % 60}`);
+//             --t;
+//         }
+//         else {
+//             console.log("Time's up!");
+//             clearInterval(id);
+//         }
+//     }, 1000);
+// }
+
+const picker = (roster, end=false) => {
+    
+    const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
+    const end_pos = ['K', 'DEF']
+    const pos_maxes = {"RB":2, "WR": 2, "QB": 1, "TE": 1}
+
+    let bestPlayer;
+    if (!end) {
+        // Count players in roster
+        roster.players.forEach(player => all_pos[player.position]+=1);
+        
+        // Get array of unmaxed out positions
+        avail_pos = Object.keys(all_pos).filter(ho => all_pos[ho] < pos_maxes[ho]);
+        
+        // If there are unmaxed out positions, get highest ranked player of needed position.
+        // Otherwise, all positions are maxed out and just take the highest ranked player.
+        bestPlayer = avail_pos ? playersPool.find(player=>avail_pos.includes(player.position)) : playersPool.find(player=>all_pos.includes(player.position));
+    }
+    else {
+        bestPlayer = playersPool.find(player=>player.position === end_pos.shift());
+    }
+    
+    debugger
+
+    draftPlayer(bestPlayer.id, roster.id)
+
+    return bestPlayer
+}
+
+const drafter = async (owner, end) => {
+
+    // Fetch the roster from the backend for the owner
+    const roster = await fetchRoster(owner.roster.id)
+
+    // Draft the best available player
+    const draftedPlayer = picker(roster, end);
+
+    // Log or update frontend (side bar) with their pick
+    console.log(`${owner.name} drafted player: ${draftedPlayer.first_name} ${draftedPlayer.last_name}`)
+}
+
+const runDraft = () => {
+    
+    for (let round = 1; round <= 16; round++) {
+
+        draftOrder.forEach(owner => {
+            if (owner === user) {
+                // TODO!!
+                console.log('User turn')
+            } else {
+                drafter(owner, round<15)  // Kicker and Defense last 2 rounds
+            }
+        })
+    }
+}
+ 
+// ------------ END PICKING LOGIC ----------
+
 const handleSetupFormSubmit = async event => {
     event.preventDefault()
 
@@ -329,6 +420,7 @@ const handleSetupFormSubmit = async event => {
     }
 
     // Don't let the user edit anything in the form after it's successfully submitted
+    // TODO: hide/delete form, and make a header with the username
     const form = event.target.parentElement
     const inputs = form.querySelectorAll('input')
     inputs.forEach(input => input.disabled = true)
@@ -377,13 +469,24 @@ const handleSetupFormSubmit = async event => {
                 .then(parseJSONResponse)
                 .catch(logError)
 
-    // Display the user's roster by default
-    fetchAndDisplayRoster(user.roster.id)
-
-    displayRosterDropdown()
-    fetchAndPopulatePlayerPool()
-    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)
+    fetchAndDisplayRoster(user.roster.id) // Display the user's roster by default
+    displayRosterDropdown()               // Make the dropdown select for viewing other rosters
+    fetchAndPopulatePlayerPool()          // Populate the pool table with all the players
+    
+    // Add Draft and Queue button event listeners
+    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
+
+    // Establish draft order -- TODO: Randomize!
+    draftOrder = [user, ...opponents]
+    displayDraftOrder()
+
+    // Start the timer
+    // Don't allow user to draft again (disable Draft button)
+    // Once user has drafted, loop through all the computer owner turns
+    //     1. Select a player
+    //     2. Add player to roster (frontend and backend)
+    runDraft()
 }
 
 
