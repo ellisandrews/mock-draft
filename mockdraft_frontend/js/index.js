@@ -501,12 +501,12 @@ const handleSetupFormSubmit = async event => {
     draftOrder = [user, ...opponents]
     displayDraftOrder()
 
+    // Listen for when the user wants to start the draft
+    document.querySelector('#start-draft-button').addEventListener('click', handleStartDraftClick)
+
     // Toggle what is displayed on screen
     toggleHidden(document.querySelector('#setup-panel'))
     toggleHidden(document.querySelector('#draft-panel'))
-    
-    // Listen for when the user wants to start the draft
-    document.querySelector('#start-draft-button').addEventListener('click', handleStartDraftClick)
 }
 
 // ----- EXECUTION ----- // 
