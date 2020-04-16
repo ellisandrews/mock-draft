@@ -311,7 +311,7 @@ const displayRosterDropdown = () => {
 
 const handleSetupFormSubmit = async event => {
     event.preventDefault()
-    
+
     const username = document.querySelector("#owner-name").value
     const teamName = document.querySelector("#team-name").value
     const numOpponents = document.querySelector("#num-opponents").value
@@ -327,6 +327,11 @@ const handleSetupFormSubmit = async event => {
         alert('Number of Opponents is required, and must be between 1 and 19!')
         return false
     }
+
+    // Don't let the user edit anything in the form after it's successfully submitted
+    const form = event.target.parentElement
+    const inputs = form.querySelectorAll('input')
+    inputs.forEach(input => input.disabled = true)
 
     // TODO: Clear out any already rostered players from previous drafts?
     // Fetch the specified number of oppenents from the backend. 
