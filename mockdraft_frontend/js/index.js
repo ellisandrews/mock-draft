@@ -3,7 +3,7 @@ const APIBASE = 'http://localhost:3000'
 const rosterPositions = [
     'QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'DEF', 'K', 'BENCH1', 'BENCH2', 'BENCH3', 'BENCH4', 'BENCH5', 'BENCH6', 'BENCH7'
 ]
-const playersCache = {}
+const playersPool = []
 
 // Commonly used permanent nodes
 const playerPoolTable = document.querySelector("#player-pool-table")
@@ -44,7 +44,7 @@ const populatePlayerPoolTable = players => {
 const cachePlayers = players => {
     // Ad the players to the global cache
     players.forEach(player => {
-        playersCache[player.id] = player
+        playersPool.push(player)
     })
 
     // Return the original data structure for further processing
@@ -76,7 +76,7 @@ const handlePlayerPoolTableClick = event => {
 
         if (target.innerText === 'Queue') {
             // Add make a new player row and append it to the Queue table
-            const tr = makePlayerTableRow(playersCache[playerId], 'Remove')
+            const tr = makePlayerTableRow(playersPool[parseInt(playerId) - 1], 'Remove')
             document.querySelector("#player-queue-tbody").appendChild(tr)
 
             // Hide the Queue button for that player
@@ -94,6 +94,9 @@ const handlePlayerPoolTableClick = event => {
             if (playerQueueRow) {
                 playerQueueRow.remove()
             }
+
+            // Kick off computer owner turns
+            // drafter()
         }
     }
 }
@@ -235,6 +238,10 @@ const draftPlayer = async (playerId, rosterId) => {
     if (rosterId == document.querySelector("#roster-show").dataset.rosterId) {
         fetchAndDisplayRoster(rosterId)
     }
+
+    // Delete the player from the local playersPool
+    const index = playersPool.findIndex(player => player.id === parseInt(playerId))
+    playersPool.splice(index, 1)
 }
 
 const displayRoster = roster => {
@@ -320,6 +327,63 @@ const displayDraftOrder = () => {
     orderDiv.appendChild(ol)
 }
 
+// ---------PICKING LOGIG --------
+
+// function timer(t=120) {
+//     let id = setInterval(function() {
+//         if (t >= 0) {
+//             console.log(`${Math.floor(t / 60)}:${t % 60 >= 10 ? "" : "0"}${t % 60}`);
+//             --t;
+//         }
+//         else {
+//             console.log("Time's up!");
+//             clearInterval(id);
+//         }
+//     }, 1000);
+// }
+
+// function picker(pool, lineup, end=false) {
+//     const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
+//     const end_pos = ['K', 'DEF']
+//     let best;
+//     if (!end) {
+//         lineup.forEach(ho=>all_pos[ho.position]+=1);
+//         avail_pos = Object.keys(all_pos).filter(ho=>all_pos[ho]<pos_maxes[ho]);
+//         best = avail_pos ? pool.findIndex(player=>avail_pos.includes(player.position)) : pool.findIndex(player=>all_pos.includes(player.position));
+//     }
+//     else {
+//         best = pool.findIndex(player=>player.position === end_pos.shift());
+//     }
+//     lineup.push(pool.splice(best, 1)[0]);
+// }
+
+// names = ["Ellis Andrews", "Jack Overby", "Mike Pottebaum", "Yusuf Celep", "Jason Melton", "Duke Greene", "Derick Castillo", "Raza Jafri"];
+// rosters = [[], [], [], [], [], [], [], []];
+
+// let i = 0;
+// let round = 0;
+
+// function drafter() {
+
+//     setTimeout(function() {
+//         picker(pool, rosters[j]);
+//         console.log(`With pick #${round * 8 + i + 1}, ${names[i]} selects ${rosters[round][i].displayName}`);
+//         i++;
+        
+//         if (round < 8) {
+//             if (i >= rosters.length) {
+//                 i = 0;
+//                 round++;
+//             }
+//             drafter();
+//         }
+
+//     }, 1000)
+// }
+
+ 
+// ------------ END PICKING LOGIC ----------
+
 const handleSetupFormSubmit = async event => {
     event.preventDefault()
 
@@ -401,6 +465,12 @@ const handleSetupFormSubmit = async event => {
     draftOrder = [user, ...opponents]
     displayDraftOrder()
 
+    // Start the timer
+    // Don't allow user to draft again (disable Draft button)
+    // Once user has drafted, loop through all the computer owner turns
+    //     1. Select a player
+    //     2. Add player to roster (frontend and backend)
+    
 }
 
 
