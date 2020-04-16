@@ -13,6 +13,15 @@ const playerQueueTable = document.querySelector("#player-queue-table")
 const parseJSONResponse = response => response.json()
 const logError = error => console.log(error)
 
+// Hide or unhide an element
+const toggleHidden = element => {
+    if (element.style.display === "none") {
+        element.style.display = "block";
+    } else {
+        element.style.display = "none";
+    }
+}
+
 const makePlayerTableRow = (player, buttonText='Queue') => {
     // Make a <tr> element
     const tr = document.createElement('tr')
@@ -397,8 +406,24 @@ const runDraft = () => {
         })
     }
 }
- 
+
 // ------------ END PICKING LOGIC ----------
+
+const handleStartDraftClick = event => {
+
+    event.target.disabled = true
+
+    // Add Draft and Queue button event listeners
+    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
+    playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
+
+    // Start the timer
+    // Don't allow user to draft again (disable Draft button)
+    // Once user has drafted, loop through all the computer owner turns
+    //     1. Select a player
+    //     2. Add player to roster (frontend and backend)
+    // runDraft()
+}
 
 const handleSetupFormSubmit = async event => {
     event.preventDefault()
@@ -419,11 +444,10 @@ const handleSetupFormSubmit = async event => {
         return false
     }
 
-    // Don't let the user edit anything in the form after it's successfully submitted
-    // TODO: hide/delete form, and make a header with the username
-    const form = event.target.parentElement
-    const inputs = form.querySelectorAll('input')
-    inputs.forEach(input => input.disabled = true)
+    // Add the username and team name to the draft panel
+    const userHeader = document.createElement('h4')
+    userHeader.innerText = `User: ${username} | Team Name: ${teamName}`
+    document.querySelector('#user-header').appendChild(userHeader)
 
     // TODO: Clear out any already rostered players from previous drafts?
     // Fetch the specified number of oppenents from the backend. 
@@ -472,25 +496,20 @@ const handleSetupFormSubmit = async event => {
     fetchAndDisplayRoster(user.roster.id) // Display the user's roster by default
     displayRosterDropdown()               // Make the dropdown select for viewing other rosters
     fetchAndPopulatePlayerPool()          // Populate the pool table with all the players
-    
-    // Add Draft and Queue button event listeners
-    playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
-    playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
 
-    // Establish draft order -- TODO: Randomize!
+    // Establish draft order -- TODO: Randomize
     draftOrder = [user, ...opponents]
     displayDraftOrder()
 
-    // Start the timer
-    // Don't allow user to draft again (disable Draft button)
-    // Once user has drafted, loop through all the computer owner turns
-    //     1. Select a player
-    //     2. Add player to roster (frontend and backend)
-    runDraft()
+    // Toggle what is displayed on screen
+    toggleHidden(document.querySelector('#setup-panel'))
+    toggleHidden(document.querySelector('#draft-panel'))
+    
+    // Listen for when the user wants to start the draft
+    document.querySelector('#start-draft-button').addEventListener('click', handleStartDraftClick)
 }
-
 
 // ----- EXECUTION ----- // 
 
-// Listen for a click on the form submit button. Nothing happens until then.
-document.querySelector("#start-draft-button").addEventListener('click', handleSetupFormSubmit)
+// Listen for a click on the create draft form submit button. Nothing happens until then.
+document.querySelector("#create-draft-button").addEventListener('click', handleSetupFormSubmit)
