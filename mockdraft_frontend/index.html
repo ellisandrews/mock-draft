@@ -13,165 +13,175 @@
     <h1>Mock Draft</h1>
   </header>
 
-  <!-- Draft Setup Form -->
+  <!-- Setup Panel -->
   <div id="setup-panel">
     <form>
       <label for="owner-name">Username:</label>
-      <input type="text" id="owner-name" name="owner-name" placeholder="Username" required>
+      <input type="text" id="owner-name" name="owner-name" placeholder="Username" required><br>
       <label for="team-name">Fantasy Team Name:</label>
-      <input type="text" id="team-name" name="team-name" placeholder="Team Name" required>
+      <input type="text" id="team-name" name="team-name" placeholder="Team Name" required><br>
       <label for="num-opponents">Number of Opponents:</label>
-      <input type="number" id="num-opponents" name="num-opponents" min="1" max="19" placeholder="5" required>
-      <input type="submit" id="start-draft-button" value="Start Mock Draft">
+      <input type="number" id="num-opponents" name="num-opponents" min="1" max="19" placeholder="1" value="1" required><br><br>
+      <input type="submit" id="create-draft-button" value="Create Mock Draft">
     </form>
   </div>
 
-  <!-- Draft Order Content Here-->
-  <div id="draft-order">
-    <h4>Draft Order</h4>
+  <!-- Draft Panel -->
+  <div id="draft-panel" style="display: none">
+
+    <!-- Username and Team name header -->
+    <div id="user-header"></div>
+
+    <!-- Button to start the draft once it is set up -->
+    <button id="start-draft-button">Start Draft</button>
+
+    <!-- Draft Order Content Here-->
+    <div id="draft-order">
+      <h4>Draft Order</h4>
+    </div>
+
+    <!-- Undrafted Player Pool Content Here -->
+    <div id="pool-show">
+      <table id="player-pool-table">
+        <caption>Player Pool</caption>
+        <thead>
+          <tr>
+            <th>Overall Rank</th>
+            <th>Player</th>
+            <th>Position</th>
+            <th>Position Rank</th>
+            <th>Team</th>
+            <th>Bye Week</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="player-pool-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Queue Content Here -->
+    <div id="queue-show">
+      <table id="player-queue-table">
+        <caption>Your Player Queue</caption>
+        <thead>
+          <tr>
+            <th>Overall Rank</th>
+            <th>Player</th>
+            <th>Position</th>
+            <th>Position Rank</th>
+            <th>Team</th>
+            <th>Bye Week</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="player-queue-tbody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Roster Content Here -->
+    <div id="roster-show">
+
+      <div id="roster-select-div"></div>
+
+      <table id="roster-table">
+        <caption id="roster-caption">Roster</caption>
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Player</th>
+            <th>Bye Week</th>
+          </tr>
+        </thead>
+        <tbody id="roster-tbody">
+          <tr id="QB">
+            <td>QB</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="RB1">
+            <td>RB</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="RB2">
+            <td>RB</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="WR1">
+            <td>WR</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="WR2">
+            <td>WR</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="TE">
+            <td>TE</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="FLEX">
+            <td>FLEX</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="DEF">
+            <td>DEF</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="K">
+            <td>K</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH1">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH2">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH3">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH4">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH5">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH6">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr id="BENCH7">
+            <td>BENCH</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
-
-  <!-- Undrafted Player Pool Content Here -->
-  <div id="pool-show">
-    <table id="player-pool-table">
-      <caption>Player Pool</caption>
-      <thead>
-        <tr>
-          <th>Overall Rank</th>
-          <th>Player</th>
-          <th>Position</th>
-          <th>Position Rank</th>
-          <th>Team</th>
-          <th>Bye Week</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="player-pool-tbody">
-        <!-- Populated by JS -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Queue Content Here -->
-  <div id="queue-show">
-    <table id="player-queue-table">
-      <caption>Your Player Queue</caption>
-      <thead>
-        <tr>
-          <th>Overall Rank</th>
-          <th>Player</th>
-          <th>Position</th>
-          <th>Position Rank</th>
-          <th>Team</th>
-          <th>Bye Week</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="player-queue-tbody">
-        <!-- Populated by JS -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Roster Content Here -->
-  <div id="roster-show">
-
-    <div id="roster-select-div"></div>
-
-    <table id="roster-table">
-      <caption id="roster-caption">Roster</caption>
-      <thead>
-        <tr>
-          <th>Position</th>
-          <th>Player</th>
-          <th>Bye Week</th>
-        </tr>
-      </thead>
-      <tbody id="roster-tbody">
-        <tr id="QB">
-          <td>QB</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="RB1">
-          <td>RB</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="RB2">
-          <td>RB</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="WR1">
-          <td>WR</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="WR2">
-          <td>WR</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="TE">
-          <td>TE</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="FLEX">
-          <td>FLEX</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="DEF">
-          <td>DEF</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="K">
-          <td>K</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH1">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH2">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH3">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH4">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH5">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH6">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr id="BENCH7">
-          <td>BENCH</td>
-          <td></td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
   <script src="./js/index.js" defer></script>
 </body>
 
