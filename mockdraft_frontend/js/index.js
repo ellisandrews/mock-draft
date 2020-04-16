@@ -102,7 +102,8 @@ const handlePlayerPoolTableClick = event => {
 
         if (target.innerText === 'Queue') {
             // Add make a new player row and append it to the Queue table
-            const tr = makePlayerTableRow(playersPool[parseInt(playerId) - 1], 'Remove')
+            const playerPoolIndex = playersPool.findIndex(player => player.id == playerId)
+            const tr = makePlayerTableRow(playersPool[playerPoolIndex], 'Remove')
             document.querySelector("#player-queue-tbody").appendChild(tr)
 
             // Hide the Queue button for that player
