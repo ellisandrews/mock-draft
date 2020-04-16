@@ -61,7 +61,7 @@ const fetchAndPopulatePlayerPool = () => {
     // Fetch player rankings from the backend, and display them in the player pool table
     fetch(`${APIBASE}/players`)
         .then(parseJSONResponse)
-        .then(players => players.slice(0, 20))  // TODO: Remove this limiting!!
+        .then(players => players.slice(0, 50))  // TODO: Remove this limiting!!
         .then(cachePlayers)
         .then(players => players.filter(player => !player.roster_id))  // Filter out already rostered players
         .then(populatePlayerPoolTable)
@@ -86,6 +86,17 @@ const removeDraftedPlayer = playerId => {
     }
 }
 
+const toggleDraftButtons = () => {
+    const buttons = document.querySelectorAll('button')
+
+    buttons.forEach(button => {
+        if (button.innerText === 'Draft') {
+            button.disabled = !button.disabled
+        }
+    })
+}
+
+
 // Hande clicks on the the player pool table
 const handlePlayerPoolTableClick = event => {
     // Get the target element of the click event
@@ -108,6 +119,10 @@ const handlePlayerPoolTableClick = event => {
             playerPoolRow.querySelector('button').style.display = "none"
 
         } else if (target.innerText === 'Draft') {
+
+            // Disable all the draft buttons
+            toggleDraftButtons()
+
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
 
@@ -397,10 +412,6 @@ const drafter = (owner, end) => {
 
 const runDraftRound = () => {
     
-    // What we want
-    // opponents.forEach(owner => drafter(owner, draftRound>=15))
-    // draftRound++
-    
     let i = 0
     const draftLoop = () => {         
         setTimeout(() => {   
@@ -408,7 +419,10 @@ const runDraftRound = () => {
             i++;                    
             if (i < opponents.length) { 
                 draftLoop();             
-            }                      
+            } else {
+                toggleDraftButtons()
+                // TODO: Make a fetch request to grab more players?
+            }                
             }, 3000)
     }
 
@@ -429,13 +443,6 @@ const handleStartDraftClick = event => {
     // Add Draft and Queue button event listeners
     playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
-
-    // Start the timer
-    // Don't allow user to draft again (disable Draft button)
-    // Once user has drafted, loop through all the computer owner turns
-    //     1. Select a player
-    //     2. Add player to roster (frontend and backend)
-    // runDraft()
 }
 
 const handleSetupFormSubmit = async event => {
