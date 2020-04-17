@@ -64,7 +64,7 @@ const cachePlayers = players => {
 
 const fetchAndPopulatePlayerPool = () => {
     // Fetch player rankings from the backend, and display them in the player pool table
-    fetch(`${APIBASE}/players`)
+    fetch(`${APIBASE}/players/reset`, {method: 'POST'})
         .then(parseJSONResponse)
         // .then(players => players.slice(0, 50))  // TODO: Remove this limiting!!
         .then(cachePlayers)
@@ -361,13 +361,13 @@ const displayDraftOrder = () => {
 
 // ---------PICKING LOGIG --------
 
-const picker = (roster, end=false) => {
+const picker = roster => {
     
     const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
     const pos_maxes = {"RB":2, "WR": 2, "QB": 1, "TE": 1}
 
     let bestPlayer;
-    if (!end) {
+    if (draftRound < 15) {
         // Count players in roster
         roster.players.forEach(player => all_pos[player.position]+=1);
         
@@ -377,30 +377,24 @@ const picker = (roster, end=false) => {
         // If there are unmaxed out positions, get highest ranked player of needed position.
         // Otherwise, all positions are maxed out and just take the highest ranked player.
         bestPlayer = avail_pos.length > 0 ? playersPool.find(player=>avail_pos.includes(player.position)) : playersPool[0]
-    }
-    else {
-        if (draftRound === 15) {
-            bestPlayer = playersPool.find(player => player.position === 'DEF')
-        } else {
-            bestPlayer = playersPool.find(player => player.position === 'K')
-        }
+    } else if (draftRound === 15) {
+        bestPlayer = playersPool.find(player => player.position === 'DEF')
+    } else {
+        bestPlayer = playersPool.find(player => player.position === 'K')
     }
     
     draftPlayer(bestPlayer.id, roster.id)
-
-    return bestPlayer
 }
 
-const drafter = (owner, end) => {
+const drafter = owner => {
 
     // Fetch the roster from the backend for the owner
     fetchRoster(owner.roster.id)
     .then(roster => {
         // Draft the best available player
-        const draftedPlayer = picker(roster, end);
+        picker(roster);
     })
 }
-
 
 const logActivity = message => {
     const li = document.createElement('li')
@@ -413,27 +407,51 @@ const runDraftRound = () => {
     let i = 0
     const draftLoop = () => {         
         setTimeout(() => {   
-            drafter(opponents[i], draftRound>=15) 
+            drafter(opponents[i]) 
             i++;                    
             if (i < opponents.length) { 
                 draftLoop();             
             } else {
-                setTimeout(logActivity, 200, `<b>--- END OF ROUND ${draftRound - 1} ---</b>`)
-                toggleButtons('Draft')
+                setTimeout(() => {
+                    logActivity(`<b>--- END OF ROUND ${draftRound} ---</b>`)
+                    toggleButtons('Draft')
+                    draftRound++
+                    checkFinished()
+                }, 250)
             }                
-            }, 200)
+            }, 250)
     }
 
     draftLoop()
-    draftRound++
+}
+
+const checkFinished = () => {
+    if (draftRound > 16) {
+        // Toggle buttons to un-clickable
+        toggleButtons('Queue')
+        toggleButtons('Draft')
+
+        // Update the draft status banner
+        const h3 = document.querySelector('#draft-status')
+        h3.innerText = 'Draft Status: Complete'
+        h3.className = 'text-danger'
+    }
 }
 
 // ------------ END PICKING LOGIC ----------
 
 const handleStartDraftClick = event => {
 
-    // Grey out the "Start Draft" button
-    event.target.disabled = true
+    // Delete the Start button
+    event.target.remove()
+
+    // Add a header that the draft is in progress
+    const div = document.querySelector('#draft-banner')
+    const h3 = document.createElement('h3')
+    h3.id = 'draft-status'
+    h3.innerText = 'Draft Status: In Progress'
+    h3.className = 'text-success'
+    div.appendChild(h3)
 
     const playerPoolTable = document.querySelector("#player-pool-table")
     const playerQueueTable = document.querySelector("#player-queue-table")

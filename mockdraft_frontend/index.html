@@ -19,7 +19,7 @@
 
   <!-- Header -->
   <div id="header" class="container">
-    <h1>Mock Draft</h1>
+    <h1 class="display-4">Mock Draft</h1>
   </div>
   
   <!-- Setup Panel -->
@@ -39,9 +39,9 @@
   </div>
 
   <!-- Draft Panel -->
-  <div id="draft-panel" style="display: none" class="container">
+  <div id="draft-panel" style="display: none" class="container-fluid">
 
-    <div class="row align-items-center">
+    <div class="row align-items-center mx-5">
       <!-- Username and Team name header -->
       <div id="user-header" class="col alert alert-info"></div>
 
@@ -52,16 +52,16 @@
     </div>
 
     <!-- Button to start the draft once it is set up -->
-    <div class="row align-items-center">
-      <div class="col-4 my-4">
+    <div class="row align-items-center mx-4">
+      <div id="draft-banner" class="col-4 my-4">
         <button id="start-draft-button" class="btn btn-success">Start Draft</button>
       </div>
     </div>
 
     <!-- Undrafted Player Pool Content Here -->
-    <div class="row">
+    <div class="row mx-3">
       
-      <div id="pool-show" class="col-8">
+      <div id="pool-show" class="col-7">
         <h4>Player Pool</h4>
         <table id="player-pool-table" class="table table-striped small">
           <caption>Player Pool</caption>

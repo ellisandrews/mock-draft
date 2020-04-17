@@ -16,6 +16,12 @@ class PlayersController < ApplicationController
        render json: PlayerSerializer.new(player).to_serialized_json
     end
 
+    def reset
+        Player.update_all roster_id: nil, roster_position: nil
+        players = Player.all
+        render json: players.map { |player| PlayerSerializer.new(player).to_serialized_hash }
+    end
+
     private
 
     def player_params
