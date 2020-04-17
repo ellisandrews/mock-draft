@@ -19,21 +19,26 @@ const toggleHidden = element => {
     }
 }
 
-const makePlayerTableRow = (player, buttonText='Queue') => {
+const makePlayerTableRow = (player, buttonText, buttonsDisabled) => {
     // Make a <tr> element
     const tr = document.createElement('tr')
     tr.dataset.playerId = player.id
 
     // Make <td> elements for each field
-    tr.innerHTML = `
-                   <td>${player.overall_rank}</td>
-                   <td>${player.first_name} ${player.last_name}</td>
-                   <td>${player.position}</td>
-                   <td>${player.position_rank}</td>
-                   <td>${player.team}</td>
-                   <td>${player.bye_week}</td>
-                   <td><button>${buttonText}</button><button>Draft</button></td>
-                   `
+    let tds = `
+              <td>${player.overall_rank}</td>
+              <td>${player.first_name} ${player.last_name}</td>
+              <td>${player.position}</td>
+              <td>${player.position_rank}</td>
+              <td>${player.team}</td>
+              <td>${player.bye_week}</td>
+              `
+    if (buttonsDisabled) {
+        tds += `<td><button disabled>${buttonText}</button><button disabled>Draft</button></td>`
+    } else {
+        tds += `<td><button>${buttonText}</button><button>Draft</button></td>`
+    }
+    tr.innerHTML = tds
     return tr
 }
 
@@ -42,7 +47,7 @@ const populatePlayerPoolTable = players => {
     const tBody = document.querySelector("#player-pool-tbody")
 
     players.forEach(player => {
-        const tr = makePlayerTableRow(player)
+        const tr = makePlayerTableRow(player, 'Queue', true)
         tBody.appendChild(tr)
     })
 }
@@ -61,7 +66,7 @@ const fetchAndPopulatePlayerPool = () => {
     // Fetch player rankings from the backend, and display them in the player pool table
     fetch(`${APIBASE}/players`)
         .then(parseJSONResponse)
-        .then(players => players.slice(0, 50))  // TODO: Remove this limiting!!
+        // .then(players => players.slice(0, 50))  // TODO: Remove this limiting!!
         .then(cachePlayers)
         .then(players => players.filter(player => !player.roster_id))  // Filter out already rostered players
         .then(populatePlayerPoolTable)
@@ -86,11 +91,11 @@ const removeDraftedPlayer = playerId => {
     }
 }
 
-const toggleDraftButtons = () => {
+const toggleButtons = buttonText => {
     const buttons = document.querySelectorAll('button')
 
     buttons.forEach(button => {
-        if (button.innerText === 'Draft') {
+        if (button.innerText === buttonText) {
             button.disabled = !button.disabled
         }
     })
@@ -112,7 +117,7 @@ const handlePlayerPoolTableClick = event => {
         if (target.innerText === 'Queue') {
             // Add make a new player row and append it to the Queue table
             const playerPoolIndex = playersPool.findIndex(player => player.id == playerId)
-            const tr = makePlayerTableRow(playersPool[playerPoolIndex], 'Remove')
+            const tr = makePlayerTableRow(playersPool[playerPoolIndex], 'Remove', false)
             document.querySelector("#player-queue-tbody").appendChild(tr)
 
             // Hide the Queue button for that player
@@ -121,7 +126,7 @@ const handlePlayerPoolTableClick = event => {
         } else if (target.innerText === 'Draft') {
 
             // Disable all the draft buttons
-            toggleDraftButtons()
+            toggleButtons('Draft')
 
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
@@ -420,8 +425,7 @@ const runDraftRound = () => {
             if (i < opponents.length) { 
                 draftLoop();             
             } else {
-                toggleDraftButtons()
-                // TODO: Make a fetch request to grab more players?
+                toggleButtons('Draft')
             }                
             }, 3000)
     }
@@ -443,6 +447,10 @@ const handleStartDraftClick = event => {
     // Add Draft and Queue button event listeners
     playerPoolTable.addEventListener('click', handlePlayerPoolTableClick)    
     playerQueueTable.addEventListener('click', handlePlayerQueueTableClick)
+
+    // Toggle the buttons to be clickable
+    toggleButtons('Queue')
+    toggleButtons('Draft')
 }
 
 const handleSetupFormSubmit = async event => {
@@ -515,7 +523,6 @@ const handleSetupFormSubmit = async event => {
 
     fetchAndDisplayRoster(user.roster.id) // Display the user's roster by default
     displayRosterDropdown()               // Make the dropdown select for viewing other rosters
-    fetchAndPopulatePlayerPool()          // Populate the pool table with all the players
 
     // Establish draft order -- TODO: Randomize
     draftOrder = [user, ...opponents]
@@ -530,6 +537,9 @@ const handleSetupFormSubmit = async event => {
 }
 
 // ----- EXECUTION ----- // 
+
+// Populate the pool table with all the players. Kick this off right away as it takes the longest
+fetchAndPopulatePlayerPool()
 
 // Listen for a click on the create draft form submit button. Nothing happens until then.
 document.querySelector("#create-draft-button").addEventListener('click', handleSetupFormSubmit)
