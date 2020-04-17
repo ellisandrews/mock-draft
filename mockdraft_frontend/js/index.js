@@ -412,22 +412,46 @@ const runDraftRound = () => {
             if (i < opponents.length) { 
                 draftLoop();             
             } else {
-                setTimeout(logActivity, 500, `<b>--- END OF ROUND ${draftRound} ---</b>`)
-                toggleButtons('Draft')
-                setTimeout(draftRound++, 500)
+                setTimeout(() => {
+                    logActivity(`<b>--- END OF ROUND ${draftRound} ---</b>`)
+                    toggleButtons('Draft')
+                    draftRound++
+                    checkFinished()
+                }, 250)
             }                
-            }, 500)
+            }, 250)
     }
 
     draftLoop()
+}
+
+const checkFinished = () => {
+    if (draftRound > 16) {
+        // Toggle buttons to un-clickable
+        toggleButtons('Queue')
+        toggleButtons('Draft')
+
+        // Update the draft status banner
+        const h3 = document.querySelector('#draft-status')
+        h3.innerText = 'Draft Status: Complete'
+        h3.className = 'text-danger'
+    }
 }
 
 // ------------ END PICKING LOGIC ----------
 
 const handleStartDraftClick = event => {
 
-    // Grey out the "Start Draft" button
-    event.target.disabled = true
+    // Delete the Start button
+    event.target.remove()
+
+    // Add a header that the draft is in progress
+    const div = document.querySelector('#draft-banner')
+    const h3 = document.createElement('h3')
+    h3.id = 'draft-status'
+    h3.innerText = 'Draft Status: In Progress'
+    h3.className = 'text-success'
+    div.appendChild(h3)
 
     const playerPoolTable = document.querySelector("#player-pool-table")
     const playerQueueTable = document.querySelector("#player-queue-table")
