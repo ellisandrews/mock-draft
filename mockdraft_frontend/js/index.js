@@ -404,7 +404,7 @@ const drafter = (owner, end) => {
 
 const logActivity = message => {
     const li = document.createElement('li')
-    li.innerText = message
+    li.innerHTML = message
     document.querySelector('#activity-log-list').after(li)
 }
 
@@ -418,7 +418,7 @@ const runDraftRound = () => {
             if (i < opponents.length) { 
                 draftLoop();             
             } else {
-                setTimeout(logActivity, 200, `--- END OF ROUND ${draftRound - 1} ---`)
+                setTimeout(logActivity, 200, `<b>--- END OF ROUND ${draftRound - 1} ---</b>`)
                 toggleButtons('Draft')
             }                
             }, 200)
