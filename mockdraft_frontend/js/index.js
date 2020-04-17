@@ -157,6 +157,9 @@ const handlePlayerQueueTableClick = event => {
             playerPoolRow.querySelector('button').removeAttribute("style")
 
         } else if (target.innerText === 'Draft') {
+            // Disable all the draft buttons
+            toggleButtons('Draft')
+
             // Add the player to the roster
             draftPlayer(playerId, user.roster.id)
 
@@ -265,9 +268,7 @@ const draftPlayer = (playerId, rosterId) => {
         .then(player => determineRosterPosition(player.position, rosterId))
         .then(rosterPosition => addPlayerToRoster(playerId, rosterId, rosterPosition))
         .then(player => {
-            const li = document.createElement('li')
-            li.innerText = `${player.owner.name} drafted ${player.first_name} ${player.last_name} (${player.position})`
-            document.querySelector('#activity-log-list').appendChild(li)
+            logActivity(`${player.owner.name} drafted ${player.first_name} ${player.last_name} (${player.position})`)
         })
 
     // If the drafting roster is currently displayed, update it.
@@ -360,25 +361,9 @@ const displayDraftOrder = () => {
 
 // ---------PICKING LOGIG --------
 
-// function timer(t=120) {
-//     let id = setInterval(function() {
-//         if (t >= 0) {
-//             console.log(`${Math.floor(t / 60)}:${t % 60 >= 10 ? "" : "0"}${t % 60}`);
-//             --t;
-//         }
-//         else {
-//             console.log("Time's up!");
-//             clearInterval(id);
-//         }
-//     }, 1000);
-// }
-
 const picker = (roster, end=false) => {
     
-    console.log('PICKING FOR OWNER:', roster.owner.name)
-
     const all_pos = {"QB": 0, "RB": 0, "WR": 0, "TE": 0};
-    const end_pos = ['K', 'DEF']
     const pos_maxes = {"RB":2, "WR": 2, "QB": 1, "TE": 1}
 
     let bestPlayer;
@@ -391,10 +376,14 @@ const picker = (roster, end=false) => {
         
         // If there are unmaxed out positions, get highest ranked player of needed position.
         // Otherwise, all positions are maxed out and just take the highest ranked player.
-        bestPlayer = avail_pos ? playersPool.find(player=>avail_pos.includes(player.position)) : playersPool.find(player=>all_pos.includes(player.position));
+        bestPlayer = avail_pos.length > 0 ? playersPool.find(player=>avail_pos.includes(player.position)) : playersPool[0]
     }
     else {
-        bestPlayer = playersPool.find(player=>player.position === end_pos.shift());
+        if (draftRound === 15) {
+            bestPlayer = playersPool.find(player => player.position === 'DEF')
+        } else {
+            bestPlayer = playersPool.find(player => player.position === 'K')
+        }
     }
     
     draftPlayer(bestPlayer.id, roster.id)
@@ -409,10 +398,14 @@ const drafter = (owner, end) => {
     .then(roster => {
         // Draft the best available player
         const draftedPlayer = picker(roster, end);
-
-        // Log or update frontend (side bar) with their pick
-        console.log(`${owner.name} drafted player: ${draftedPlayer.first_name} ${draftedPlayer.last_name}`)
     })
+}
+
+
+const logActivity = message => {
+    const li = document.createElement('li')
+    li.innerText = message
+    document.querySelector('#activity-log-list').after(li)
 }
 
 const runDraftRound = () => {
@@ -425,9 +418,10 @@ const runDraftRound = () => {
             if (i < opponents.length) { 
                 draftLoop();             
             } else {
+                setTimeout(logActivity, 200, `--- END OF ROUND ${draftRound - 1} ---`)
                 toggleButtons('Draft')
             }                
-            }, 3000)
+            }, 200)
     }
 
     draftLoop()
@@ -473,9 +467,12 @@ const handleSetupFormSubmit = async event => {
     }
 
     // Add the username and team name to the draft panel
-    const userHeader = document.createElement('h4')
-    userHeader.innerText = `User: ${username} | Team Name: ${teamName}`
-    document.querySelector('#user-header').appendChild(userHeader)
+    const usernameHeader = document.createElement('h4')
+    const userTeamHeader = document.createElement('h4')
+
+    usernameHeader.innerText = `User: ${username}`
+    userTeamHeader.innerText = `Team Name: ${teamName}`
+    document.querySelector('#user-header').append(usernameHeader, userTeamHeader)
 
     // TODO: Clear out any already rostered players from previous drafts?
     // Fetch the specified number of oppenents from the backend. 

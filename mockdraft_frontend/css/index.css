@@ -1,7 +1,9 @@
 #player-pool-table {
-    border: 2px solid red;
-    max-height: 350px;
-    max-width: 750px;
+    max-height: 500px;
     overflow-y: scroll;
     display: block;
+}
+
+table {
+    caption-side: top;
 }
